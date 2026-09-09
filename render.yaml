@@ -18,7 +18,7 @@ services:
           name: mi-cuenta-conmigo-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: http://localhost:3000
+        value: http://localhost:3000,https://mi-cuenta-conmigo-frontend.onrender.com
       # Fijo a la version usada en desarrollo local (3.12). Sin esto, Render usa por defecto
       # la version de Python mas reciente (3.14 al momento de escribir esto), que rompe con
       # un error de "typing.Union" en SQLAlchemy 2.0.36 al leer anotaciones tipo "date | None".

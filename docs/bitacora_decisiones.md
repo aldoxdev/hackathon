@@ -784,4 +784,21 @@ A criterio del usuario, tres perfiles de demo eran redundantes: el Restaurante (
 
 ---
 
+## 2026-09-09 — Despliegue en línea: backend en Render, frontend convertido a sitio estático en Render (con Claude Code)
+
+**Motivación**: el usuario necesitaba que el equipo pudiera probar la app en línea. Primer intento del backend en Render fallo por incompatibilidad de `SQLAlchemy 2.0.36` con Python 3.14 (version que Render usa por defecto) al leer anotaciones `date | None` — corregido fijando `PYTHON_VERSION=3.12.10` en `render.yaml` (la misma version usada en desarrollo local). Verificado en producción: `/health` responde 200 y los datos de ejemplo del restaurante se sembraron solos en la base Postgres real al primer arranque.
+
+**Decisión de hosting del frontend**: se evaluó Vercel (cero cambios de codigo, soporte nativo de rutas dinamicas de Next.js) contra desplegar tambien el frontend en Render. Se descarto la preocupacion inicial de "cold start" del frontend en Render porque esta app no usa ninguna funcion de servidor de Next.js (sin rutas de API propias, todo el fetching es del lado del cliente hacia el backend de FastAPI) — eso permite compilarla como sitio 100% estatico (`output: "export"` en `next.config.ts`), y los sitios estaticos de Render se sirven al instante desde su CDN, sin dormir nunca (a diferencia de los "Web Services" gratuitos, que si duermen tras 15 min).
+
+**Bloqueo real encontrado y resuelto**: 3 paginas usaban rutas dinamicas de Next.js (`/insumos/[id]/ver`, `/recetas/[id]`, `/recetas/[id]/ver`), incompatibles con exportacion estatica porque esta necesita conocer de antemano, al compilar, todos los IDs posibles — y los IDs de insumos/recetas se crean dinamicamente despues del despliegue. Se resolvieron reescribiendo esas 3 rutas para usar un parametro de query (`?id=`) en vez de un segmento de ruta (`/[id]/`):
+- `/insumos/[id]/ver` → `/insumos/ver?id=`
+- `/recetas/[id]/ver` → `/recetas/ver?id=`
+- `/recetas/[id]` (manejaba tanto "nueva" como edicion) → separado en `/recetas/nueva` (pagina propia, sin id) y `/recetas/editar?id=` — la logica compartida de ambas se extrajo a `components/RecetaBuilder.tsx` para no duplicar codigo.
+
+Cada pagina que ahora lee `?id=` via `useSearchParams()` esta envuelta en un `<Suspense>` (requisito de Next.js para exportacion estatica). Se actualizaron todos los links (`RowActions`, tablas de Insumos/Recetas) a las nuevas URLs. Antes de tocar codigo se hizo un respaldo completo (tag de git `v1-estable-antes-de-rutas-query` + copia fisica de la carpeta del proyecto), a peticion explicita del usuario, dado que este cambio si modifica codigo de produccion (a diferencia de la opcion Vercel, que no hubiera requerido ningun cambio).
+
+**Verificado**: `npm run build` genera las 20 rutas como estaticas (`○ Static`), sin ninguna ruta dinamica pendiente; confirmado en navegador local (`npm run dev`, sin afectacion) que Ver Insumo, Ver Receta, Editar Receta y Nueva Receta funcionan igual que antes, solo con URLs distintas. `render.yaml` se extendio con un segundo servicio (`runtime: static`, `staticPublishPath: ./out`) para el frontend, con `NEXT_PUBLIC_API_URL` apuntando al backend — Render aprovisiona los tres (base de datos, backend, frontend) en un solo Blueprint.
+
+---
+
 *Agregar nuevas entradas debajo de esta línea conforme avance el desarrollo.*

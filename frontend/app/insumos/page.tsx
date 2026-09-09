@@ -341,7 +341,7 @@ export default function InsumosPage() {
                   {formatMoney(Number(insumo.costo_por_unidad_base), 4)} / {UNIDAD_BASE[insumo.magnitud]}
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <VerLink href={`/insumos/${insumo.id}/ver`} />
+                  <VerLink href={`/insumos/ver?id=${insumo.id}`} />
                   <EditarButton onClick={() => handleEditar(insumo)} />
                   <EliminarButton onClick={() => handleDelete(insumo.id)} />
                 </td>

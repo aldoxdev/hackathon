@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { FoodCostBadge } from "@/components/FoodCostBadge";
 import { formatMoney } from "@/lib/format";
 import { Insumo, Receta, RecetaInsumo, TASA_IVA_LABEL, UNIDAD_BASE } from "@/lib/types";
 
-export default function VerRecetaPage() {
-  const params = useParams<{ id: string }>();
-  const id = Number(params.id);
+function VerRecetaContenido() {
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
 
   const [receta, setReceta] = useState<Receta | null>(null);
   const [filas, setFilas] = useState<RecetaInsumo[]>([]);
@@ -60,7 +60,7 @@ export default function VerRecetaPage() {
         </div>
         <div className="flex gap-3">
           <Link
-            href={`/recetas/${receta.id}`}
+            href={`/recetas/editar?id=${receta.id}`}
             className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium hover:bg-zinc-50"
           >
             Editar
@@ -134,5 +134,13 @@ export default function VerRecetaPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function VerRecetaPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-6 py-10 text-zinc-500">Cargando...</div>}>
+      <VerRecetaContenido />
+    </Suspense>
   );
 }

@@ -1,16 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { formatMoney } from "@/lib/format";
 import { HelpIcon } from "@/components/HelpIcon";
 import { Insumo, MAGNITUD_LABEL, Receta, RecetaInsumo, UNIDAD_BASE } from "@/lib/types";
 
-export default function VerInsumoPage() {
-  const params = useParams<{ id: string }>();
-  const id = Number(params.id);
+function VerInsumoContenido() {
+  const searchParams = useSearchParams();
+  const id = Number(searchParams.get("id"));
 
   const [insumo, setInsumo] = useState<Insumo | null>(null);
   const [recetaInsumos, setRecetaInsumos] = useState<RecetaInsumo[]>([]);
@@ -113,5 +113,13 @@ export default function VerInsumoPage() {
         </table>
       </div>
     </div>
+  );
+}
+
+export default function VerInsumoPage() {
+  return (
+    <Suspense fallback={<div className="mx-auto max-w-3xl px-6 py-10 text-zinc-500">Cargando...</div>}>
+      <VerInsumoContenido />
+    </Suspense>
   );
 }

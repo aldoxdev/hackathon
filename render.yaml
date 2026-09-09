@@ -24,3 +24,15 @@ services:
       # un error de "typing.Union" en SQLAlchemy 2.0.36 al leer anotaciones tipo "date | None".
       - key: PYTHON_VERSION
         value: 3.12.10
+
+  - type: web
+    name: mi-cuenta-conmigo-frontend
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./out
+    envVars:
+      # Se usa en tiempo de build (Next.js "output: export" lo incluye directo en el HTML/JS
+      # generado, no se lee en tiempo de ejecucion). Debe apuntar al backend de arriba.
+      - key: NEXT_PUBLIC_API_URL
+        value: https://mi-cuenta-conmigo-backend.onrender.com

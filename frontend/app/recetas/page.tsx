@@ -96,7 +96,7 @@ export default function RecetasPage() {
               return (
                 <tr key={receta.id}>
                   <td className="px-4 py-3">
-                    <Link href={`/recetas/${receta.id}/ver`} className="hover:underline">
+                    <Link href={`/recetas/ver?id=${receta.id}`} className="hover:underline">
                       {receta.nombre}
                     </Link>
                   </td>
@@ -107,8 +107,8 @@ export default function RecetasPage() {
                   </td>
                   <td className="px-4 py-3">{TASA_IVA_LABEL[receta.tasa_iva]}</td>
                   <td className="px-4 py-3 text-right">
-                    <VerLink href={`/recetas/${receta.id}/ver`} />
-                    <EditarLink href={`/recetas/${receta.id}`} />
+                    <VerLink href={`/recetas/ver?id=${receta.id}`} />
+                    <EditarLink href={`/recetas/editar?id=${receta.id}`} />
                     <EliminarButton onClick={() => handleDelete(receta.id)} />
                   </td>
                 </tr>

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { api } from "@/lib/api";
 import { FoodCostBadge } from "@/components/FoodCostBadge";
@@ -23,12 +23,11 @@ interface FilaInsumo {
   cantidad_usada: number;
 }
 
-export default function RecetaBuilderPage() {
-  const params = useParams<{ id: string }>();
+export function RecetaBuilder({ recetaIdInicial }: { recetaIdInicial: number | null }) {
   const router = useRouter();
-  const esNueva = params.id === "nueva";
+  const esNueva = recetaIdInicial === null;
 
-  const [recetaId, setRecetaId] = useState<number | null>(esNueva ? null : Number(params.id));
+  const [recetaId, setRecetaId] = useState<number | null>(recetaIdInicial);
   const [nombre, setNombre] = useState("");
   const [precioVenta, setPrecioVenta] = useState("");
   const [tasaIva, setTasaIva] = useState<TasaIva>("iva_16");
@@ -49,10 +48,9 @@ export default function RecetaBuilderPage() {
         const todosInsumos = await api.getInsumos();
         setInsumos(todosInsumos);
 
-        if (!esNueva) {
-          const id = Number(params.id);
+        if (recetaIdInicial !== null) {
           const [receta, todasRecetaInsumos] = await Promise.all([
-            api.getReceta(id),
+            api.getReceta(recetaIdInicial),
             api.getRecetaInsumos(),
           ]);
           setNombre(receta.nombre);
@@ -61,7 +59,7 @@ export default function RecetaBuilderPage() {
           setOrigen(receta.origen);
           setFilas(
             todasRecetaInsumos
-              .filter((ri) => ri.receta_id === id)
+              .filter((ri) => ri.receta_id === recetaIdInicial)
               .map((ri) => ({ id: ri.id, insumo_id: ri.insumo_id, cantidad_usada: ri.cantidad_usada }))
           );
         }
@@ -72,7 +70,7 @@ export default function RecetaBuilderPage() {
       }
     }
     cargar();
-  }, [esNueva, params.id]);
+  }, [recetaIdInicial]);
 
   const insumosById = useMemo(() => new Map(insumos.map((i) => [i.id, i])), [insumos]);
   const insumosDisponibles = insumos.filter((i) => !filas.some((f) => f.insumo_id === i.id));

@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme inline {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+:root {
+  --brand-primary: #149968;
+  --brand-secondary: #123256;
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  color: #ffffff;
+}
+.btn-primary:hover {
+  filter: brightness(0.88);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+}

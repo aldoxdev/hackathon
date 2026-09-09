@@ -1,0 +1,21 @@
+databases:
+  - name: mi-cuenta-conmigo-db
+    plan: free
+    databaseName: mi_cuenta_conmigo
+    user: mi_cuenta_conmigo
+
+services:
+  - type: web
+    name: mi-cuenta-conmigo-backend
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: mi-cuenta-conmigo-db
+          property: connectionString
+      - key: CORS_ORIGINS
+        value: http://localhost:3000

@@ -42,7 +42,7 @@ El frontend es 100% estático (`next.config.ts` tiene `output: "export"`) — no
    git push -u origin main
    ```
 2. En [render.com](https://render.com), *New > Blueprint*, conecta este repo. Render detecta `render.yaml` y crea automáticamente: una base de datos Postgres gratuita, el backend (FastAPI) y el frontend (sitio estático de Next.js) — los tres ya conectados entre sí.
-3. Espera a que los tres terminen de desplegar (unos minutos). Abre la URL del servicio `mi-cuenta-conmigo-frontend` — la app ya debería funcionar en línea, con datos de ejemplo precargados automáticamente en el primer arranque.
+3. Espera a que los tres terminen de desplegar (unos minutos). Abre la URL del servicio `mis-cuentas-conmigo` — la app ya debería funcionar en línea, con datos de ejemplo precargados automáticamente en el primer arranque.
 4. **Último paso manual**: entra al servicio `mi-cuenta-conmigo-backend` → Environment, y cambia `CORS_ORIGINS` de `http://localhost:3000` a la URL del frontend (paso 3). Guarda (Render reinicia el servicio solo, sin redeploy de código).
 
 **Nota**: el plan gratuito de Render "duerme" el backend tras 15 min sin uso — la primera visita después de una pausa puede tardar ~30-60 seg en responder mientras despierta. El sitio estático del frontend no tiene este problema (se sirve al instante).

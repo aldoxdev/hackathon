@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { Fragment, ReactNode } from "react";
 
-const PATRON_INLINE = /\*\*(.+?)\*\*|\[([^\]]+)\]\((\/[^)]*)\)/g;
+// Orden importa: primero el caso de un link envuelto en negritas (**[texto](/ruta)**), que el
+// modelo escribe seguido — si no se prueba primero, la alternativa de negrita generica "gana" y
+// se traga el link completo como texto plano dentro de un <strong>.
+const PATRON_INLINE =
+  /\*\*\[([^\]]+)\]\((\/[^)]*)\)\*\*|\*\*(.+?)\*\*|\[([^\]]+)\]\((\/[^)]*)\)/g;
+
+function renderLink(texto: string, href: string, key: string) {
+  return (
+    <Link key={key} href={href} className="font-medium underline" style={{ color: "var(--brand-primary)" }}>
+      {texto}
+    </Link>
+  );
+}
 
 function formatearLinea(linea: string, key: string): ReactNode[] {
   const partes: ReactNode[] = [];
@@ -12,13 +24,12 @@ function formatearLinea(linea: string, key: string): ReactNode[] {
   while ((match = PATRON_INLINE.exec(linea)) !== null) {
     if (match.index > ultimo) partes.push(linea.slice(ultimo, match.index));
     if (match[1] !== undefined) {
-      partes.push(<strong key={`${key}-${i}`}>{match[1]}</strong>);
+      // link envuelto en negritas: **[texto](/ruta)**
+      partes.push(<strong key={`${key}-${i}`}>{renderLink(match[1], match[2], `${key}-${i}-link`)}</strong>);
+    } else if (match[3] !== undefined) {
+      partes.push(<strong key={`${key}-${i}`}>{match[3]}</strong>);
     } else {
-      partes.push(
-        <Link key={`${key}-${i}`} href={match[3]} className="font-medium underline" style={{ color: "var(--brand-primary)" }}>
-          {match[2]}
-        </Link>
-      );
+      partes.push(renderLink(match[4], match[5], `${key}-${i}`));
     }
     ultimo = PATRON_INLINE.lastIndex;
     i++;

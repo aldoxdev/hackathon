@@ -299,7 +299,8 @@ export default function InsumosPage() {
       </form>
 
       <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
-        <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-max text-left text-sm">
           <thead className="bg-zinc-50 text-zinc-500">
             <tr>
               <th className="px-4 py-3 font-medium">Nombre</th>
@@ -349,6 +350,7 @@ export default function InsumosPage() {
             ))}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

@@ -809,4 +809,20 @@ El usuario noto que Gastos Fijos tiene un boton "Copiar los de [mes anterior]" c
 
 ---
 
+## 2026-09-09 — Tablas responsivas en movil: scroll horizontal en las 11 tablas del sitio (con Claude Code)
+
+**Motivación**: el usuario reportó que las tablas no se veían bien en celular (columnas apretadas, fechas partidas en 3 líneas). Se hizo una revisión sistemática de las 11 pantallas con `<table>` en un viewport de 375px (iPhone SE, el mas angosto comun).
+
+**Causa raíz**: solo `flujo-efectivo/page.tsx` tenia `overflow-x-auto` alrededor de su tabla — las otras 10 no tenían ningún contenedor con scroll, así que el navegador encogia las columnas y partia el texto para caber en pantalla en vez de permitir deslizar. Ademas, encontrar esto revelo un segundo problema mas sutil: envolver la tabla en `overflow-x-auto` NO bastaba por si solo — como las tablas usan `w-full` (100% del contenedor), el navegador seguia encogiendo las columnas para caber en el 100% disponible en vez de desbordarse. Hizo falta agregar tambien `min-w-max` a cada `<table>` para forzar que mantenga su ancho natural de contenido y active el scroll en vez de comprimirse.
+
+**Corrección aplicada** (mismo patron en los 11 archivos: `recetas`, `recetas/ver`, `insumos`, `insumos/ver`, `ventas`, `traspasos-caja`, `consumo-indirecto`, `egresos/compras-insumos`, `gastos-fijos`, `abc`, y el ya existente `flujo-efectivo` que solo necesito el `min-w-max`): envolver `<table>` en un `<div className="overflow-x-auto">` interno (sin quitar el `overflow-hidden rounded-lg border` exterior que da las esquinas redondeadas), y agregar `min-w-max` a la clase del `<table>`.
+
+**Revisión adicional pedida por el usuario ("detecta algun otro componente no responsivo")**: se recorrieron las 18 pantallas restantes de la app (Dashboard, Configuracion, Estado de Resultados, Flujo de Efectivo, ABC, Importar, Glosario, Alcance, las paginas Ver/Editar/Nueva de Insumos y Recetas) con un script que mide `document.body.scrollWidth` contra el ancho del viewport — la señal confiable de un desborde horizontal real. Todas limpias, sin necesitar cambios. El menu movil (hamburguesa) tambien se probo y funciona correctamente (desliza el sidebar con overlay).
+
+**Nota de proceso importante**: durante esta revision, una captura de pantalla mostro un falso positivo — la pagina de Estado de Resultados parecia tener el titulo cortado y toda la pagina desbordada. Investigarlo con el script de medicion del DOM (`body.scrollWidth === viewport width`) confirmo que NO habia ningun problema real; la captura tenia un artefacto visual de mosaico/duplicado del propio visor. Desde entonces se prefirio verificar sospechas de desborde con medicion de DOM en vez de solo inspeccion visual de capturas, que pueden ser enganosas.
+
+**Verificado**: `npm run build` compila las 20 rutas como estaticas sin errores tras cada tanda de cambios; confirmado visualmente en viewport de 375px que las fechas de Ventas ya no se parten en 3 lineas, y que deslizando el dedo (`scrollLeft`) se revelan las columnas de Margen/Medio de pago que antes quedaban cortadas — igual en Insumos (revela Costo por unidad base y los iconos Ver/Editar/Eliminar).
+
+---
+
 *Agregar nuevas entradas debajo de esta línea conforme avance el desarrollo.*

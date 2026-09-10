@@ -83,7 +83,8 @@ function VerInsumoContenido() {
       <div className="rounded-lg border border-zinc-200 bg-white p-6">
         <h2 className="text-lg font-medium text-zinc-900">Se usa en estas recetas</h2>
 
-        <table className="mt-4 w-full text-left text-sm">
+        <div className="overflow-x-auto">
+        <table className="mt-4 w-full min-w-max text-left text-sm">
           <thead className="border-b border-zinc-200 text-zinc-500">
             <tr>
               <th className="py-2 font-medium">Receta</th>
@@ -111,6 +112,7 @@ function VerInsumoContenido() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );

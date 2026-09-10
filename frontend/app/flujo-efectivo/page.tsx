@@ -360,7 +360,7 @@ function DetalleTablaFlujo({
         <p className="mt-2 text-xs text-zinc-500">{vacio}</p>
       ) : (
         <div className="mt-3 overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-max text-left text-sm">
             <thead className="text-xs text-zinc-500">
               <tr>
                 <th className="py-1 font-medium">Concepto</th>

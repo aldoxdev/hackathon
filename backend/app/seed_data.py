@@ -198,8 +198,10 @@ CONFIGURACION_UN_PRODUCTO = {
     "nombre_negocio": "Chicharrones Dona Meche",
     "eslogan": "Chicharron recien hecho, al gusto",
     "logo_url": None,
-    "color_primario": "#CA8A04",
-    "color_secundario": "#78350F",
+    # Mismo color en los 3 perfiles a proposito: la paleta de la app es fija, no debe cambiar
+    # segun que fuente de datos de demo se cargue — solo el usuario la cambia, desde Configuracion.
+    "color_primario": "#149968",
+    "color_secundario": "#123256",
     "saldo_inicial_banco": 0,
     "saldo_inicial_efectivo": 300,
     "fecha_saldo_inicial": date(2025, 1, 1),
@@ -310,8 +312,8 @@ CONFIGURACION_TAQUERIA = {
     "nombre_negocio": "Taqueria Los Compadres",
     "eslogan": "Tacos como los de tu barrio",
     "logo_url": None,
-    "color_primario": "#B91C1C",
-    "color_secundario": "#78350F",
+    "color_primario": "#149968",
+    "color_secundario": "#123256",
     "saldo_inicial_banco": 25000,
     "saldo_inicial_efectivo": 15000,
     "fecha_saldo_inicial": date(2025, 1, 1),

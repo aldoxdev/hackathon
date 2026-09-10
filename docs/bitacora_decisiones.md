@@ -801,4 +801,12 @@ Cada pagina que ahora lee `?id=` via `useSearchParams()` esta envuelta en un `<S
 
 ---
 
+## 2026-09-09 — Por que "Consumo indirecto" NO tiene boton de "precarga" (a diferencia de Gastos Fijos) (con Claude Code)
+
+El usuario noto que Gastos Fijos tiene un boton "Copiar los de [mes anterior]" cuando el mes en curso esta vacio, pero Consumo Indirecto no tiene ningun atajo equivalente — hay que capturar cada concepto a mano, mes tras mes. Se evaluo agregar el mismo boton por consistencia, pero se descarto a proposito.
+
+**Motivo**: Gastos Fijos (renta, nomina, luz, internet) son montos casi fijos por definicion — casi no cambian mes a mes, asi que copiar el mes anterior suele ser correcto. Consumo Indirecto (servilletas, gas, bolsas) es genuinamente variable: depende de cuanto se uso realmente ese mes, y puede bajar, subir, o incluso ser cero. Un boton de "copiar el mes pasado" ahi invitaria a repetir un numero viejo sin pensarlo, en vez de capturar el gasto real — justo lo opuesto al valor que da esta pantalla. La diferencia de flujo entre ambas pantallas es intencional, no una inconsistencia a corregir.
+
+---
+
 *Agregar nuevas entradas debajo de esta línea conforme avance el desarrollo.*

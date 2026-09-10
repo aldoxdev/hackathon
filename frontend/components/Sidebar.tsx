@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   ArrowLeftRight,
   BarChart3,
@@ -12,6 +12,7 @@ import {
   Info,
   LayoutDashboard,
   Landmark,
+  LogOut,
   Package,
   Receipt,
   Settings,
@@ -20,6 +21,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { BrandHeader } from "./BrandHeader";
+import { cerrarSesion } from "@/lib/auth";
 
 interface NavItem {
   href: string;
@@ -72,6 +74,13 @@ const GRUPOS: NavGroup[] = [
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  function handleCerrarSesion() {
+    cerrarSesion();
+    onNavigate?.();
+    router.push("/login");
+  }
 
   return (
     <aside
@@ -124,6 +133,17 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           </div>
         ))}
       </nav>
+
+      <div className="shrink-0 border-t border-zinc-200 px-3 pt-3">
+        <button
+          type="button"
+          onClick={handleCerrarSesion}
+          className="flex w-full items-center gap-2.5 rounded-md px-2.5 py-2 text-sm font-medium text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700"
+        >
+          <LogOut size={17} />
+          Cerrar sesion
+        </button>
+      </div>
 
       <div className="flex shrink-0 flex-col items-center gap-1 border-t border-zinc-200 bg-white px-5 py-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -975,6 +975,52 @@ def _quitar_dominio_de_links(texto: str) -> str:
     return re.sub(r"\]\(https?://[^/\s)]+(/[^)]*)?\)", lambda m: f"]({m.group(1) or '/'})", texto)
 
 
+_ACENTOS_POR_LETRA = {"a": "aá", "e": "eé", "i": "ií", "o": "oó", "u": "uúü", "n": "nñ"}
+
+
+def _clase_letra_insensible(c: str) -> str:
+    variantes = _ACENTOS_POR_LETRA.get(c.lower(), c.lower())
+    todas = sorted(set(variantes) | {v.upper() for v in variantes})
+    return "[" + "".join(todas) + "]"
+
+
+def _patron_pantalla(nombre: str) -> str:
+    """Patron para detectar la mencion de una pantalla en texto libre. La PRIMERA letra exige
+    mayuscula/minuscula EXACTA (para no enlazar un uso generico en minusculas de la palabra, ej.
+    "tus insumos", en vez de la mencion real a la pantalla, ej. "en Insumos") — el resto tolera
+    tanto acentos (Configuracion/Configuración) como mayusculas variables (el modelo a veces
+    escribe "Flujo de Efectivo", a veces "Flujo de efectivo")."""
+    partes = []
+    for i, c in enumerate(nombre):
+        if not c.isalpha():
+            partes.append(re.escape(c))
+        elif i == 0:
+            partes.append(re.escape(c))
+        else:
+            partes.append(_clase_letra_insensible(c))
+    return "".join(partes)
+
+
+def _autolinkear_pantallas_mencionadas(texto: str) -> str:
+    """Cuando se uso ayuda_pantalla, el texto suele mencionar OTRAS pantallas en texto plano (ej.
+    "da de alta tus insumos en Insumos") sin que el modelo se acuerde de ponerles el link — a
+    diferencia de _agregar_links_faltantes (que solo garantiza la pantalla que se pidio), esto
+    enlaza cualquier mencion de CUALQUIER pantalla catalogada que aparezca en el texto, sea que
+    el modelo la haya puesto en negritas, texto plano, o ya como link."""
+    ya_presentes = set(re.findall(r"\((/[^)]*)\)", texto))
+    # nombres mas largos primero, para no enlazar "Insumos" a medias dentro de "Compra de insumos"
+    entradas = sorted(AYUDA_PANTALLAS.values(), key=lambda e: -len(e["nombre"]))
+    for info in entradas:
+        ruta, nombre = info["ruta"], info["nombre"]
+        if ruta in ya_presentes or ruta == "/":  # "/" es demasiado generico para autolinkear por nombre
+            continue
+        patron = re.compile(rf"(?<![\[\(/-]){_patron_pantalla(nombre)}\b(?!\]|\()")
+        texto, n = patron.subn(lambda m: f"[{m.group(0)}]({ruta})", texto, count=1)
+        if n:
+            ya_presentes.add(ruta)
+    return texto
+
+
 def _agregar_links_faltantes(texto: str, herramientas_usadas: set[str], pantallas_pedidas: set[str]) -> str:
     ya_presentes = set(re.findall(r"\((/[^)]*)\)", texto))
     faltantes: dict[str, str] = {}
@@ -1108,6 +1154,8 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
             if not mensaje.tool_calls:
                 texto = _quitar_dominio_de_links(mensaje.content or "")
                 texto = _corregir_cifras(texto, cifras_confiables)
+                if pantallas_pedidas:
+                    texto = _autolinkear_pantallas_mencionadas(texto)
                 texto = _agregar_links_faltantes(texto, herramientas_usadas, pantallas_pedidas)
                 return ChatResponse(respuesta=texto)
 

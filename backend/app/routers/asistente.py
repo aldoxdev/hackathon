@@ -170,7 +170,9 @@ def tool_resumen_financiero(db: Session, periodo: str) -> dict:
     }
 
 
-def tool_top_platillos(db: Session, periodo: str, cantidad: int = 5, criterio: str = "ventas_totales") -> dict:
+def tool_top_platillos(
+    db: Session, periodo: str, cantidad: int = 5, criterio: str = "ventas_totales", orden: str = "desc"
+) -> dict:
     hoy = date.today()
     rango = _rango_periodo(periodo, hoy)
     ventas = _venta_query(db, rango)
@@ -201,8 +203,8 @@ def tool_top_platillos(db: Session, periodo: str, cantidad: int = 5, criterio: s
         "unidades": "unidades_vendidas",
         "margen_por_unidad": "margen_por_unidad",
     }.get(criterio, "ventas_totales")
-    filas.sort(key=lambda f: f[clave], reverse=True)
-    return {"periodo": periodo, "criterio": criterio, "platillos": filas[:cantidad]}
+    filas.sort(key=lambda f: f[clave], reverse=(orden != "asc"))
+    return {"periodo": periodo, "criterio": criterio, "orden": orden, "platillos": filas[:cantidad]}
 
 
 def tool_analisis_abc(db: Session, periodo: str) -> dict:
@@ -620,7 +622,7 @@ def tool_ayuda_pantalla(pantalla: str) -> dict:
 TOOL_DISPATCH = {
     "resumen_financiero": lambda db, args: tool_resumen_financiero(db, args["periodo"]),
     "top_platillos": lambda db, args: tool_top_platillos(
-        db, args["periodo"], args.get("cantidad", 5), args.get("criterio", "unidades")
+        db, args["periodo"], args.get("cantidad", 5), args.get("criterio", "unidades"), args.get("orden", "desc")
     ),
     "analisis_abc": lambda db, args: tool_analisis_abc(db, args["periodo"]),
     "detalle_receta": lambda db, args: tool_detalle_receta(db, args["nombre"]),
@@ -659,9 +661,10 @@ TOOLS_SCHEMA = [
         "function": {
             "name": "top_platillos",
             "description": (
-                "Devuelve el ranking de platillos de un periodo segun ventas totales, unidades "
-                "vendidas, o margen por unidad. Usar para preguntas sobre cual es el platillo mas "
-                "vendido o cuales son los mejores platillos. "
+                "Devuelve el ranking de TODOS los platillos de un periodo segun ventas totales, "
+                "unidades vendidas, o margen por unidad, en el orden que pidas. Usar para preguntas "
+                "sobre cual es el platillo mas O MENOS vendido, cuales son los mejores O LOS PEORES "
+                "platillos. "
                 "REGLA ESTRICTA sobre el criterio, no la incumplas: cuando pregunten 'cual es el "
                 "producto/platillo que MAS VENDI o MAS SE VENDE', SIEMPRE usa criterio='unidades'. "
                 "NUNCA uses criterio='ventas_totales' para ese tipo de pregunta, aunque el resultado "
@@ -669,7 +672,12 @@ TOOLS_SCHEMA = [
                 "700 unidades y Taco al pastor genera $18,000 en 900 unidades, 'el mas vendido' es "
                 "Taco al pastor (mas unidades), NO Refresco, aunque Refresco haya generado mas "
                 "dinero. Usa criterio='ventas_totales' UNICAMENTE si preguntan explicitamente por "
-                "ingresos, dinero generado, o cual deja mas en pesos — nunca por default."
+                "ingresos, dinero generado, o cual deja mas en pesos — nunca por default.\n"
+                "REGLA ESTRICTA sobre orden, no la incumplas: si preguntan por el platillo que "
+                "MENOS vende, el PEOR, el que MENOS deja, o similar, usa orden='asc' Y pon "
+                "cantidad=10 (o el total de platillos) para traer TODOS y encontrar el minimo real "
+                "— NUNCA pidas orden='desc' con cantidad chica y luego tomes el ultimo de esa lista "
+                "recortada, porque el minimo real puede no estar ni siquiera incluido ahi."
             ),
             "parameters": {
                 "type": "object",
@@ -680,6 +688,14 @@ TOOLS_SCHEMA = [
                         "type": "string",
                         "enum": ["ventas_totales", "unidades", "margen_por_unidad"],
                         "description": "Por que criterio ordenar el ranking.",
+                    },
+                    "orden": {
+                        "type": "string",
+                        "enum": ["desc", "asc"],
+                        "description": (
+                            "'desc' (por defecto) para 'el mas/mejor'. 'asc' para 'el menos/peor' "
+                            "— usalo junto con una cantidad grande para no perderte el minimo real."
+                        ),
                     },
                 },
                 "required": ["periodo"],

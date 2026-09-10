@@ -31,11 +31,7 @@ export function ChatWidget() {
 
   useEffect(() => {
     const aparecer = setTimeout(() => setMostrarBienvenida(true), 900);
-    const desaparecer = setTimeout(() => setMostrarBienvenida(false), 10000);
-    return () => {
-      clearTimeout(aparecer);
-      clearTimeout(desaparecer);
-    };
+    return () => clearTimeout(aparecer);
   }, []);
 
   function abrirChat() {

@@ -66,10 +66,10 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-3">
             {vista === "registro" && (
               <label className="flex flex-col gap-1 text-sm">
-                Nombre del negocio
+                Nombre completo
                 <input
                   className="rounded-md border border-zinc-300 px-3 py-2"
-                  placeholder="Taqueria Los Compadres"
+                  placeholder="Ana Martinez"
                 />
               </label>
             )}
@@ -130,7 +130,7 @@ export default function LoginPage() {
             <p className="text-xs leading-relaxed text-zinc-600">
               Por ahora tu acceso se guarda solo en este navegador. Estamos preparando
               autenticacion real — incluyendo inicio de sesion con Google y Facebook — para una
-              proxima version.
+              proxima version. Al entrar veras los datos de ejemplo de Taqueria Los Compadres.
             </p>
           </div>
         </div>

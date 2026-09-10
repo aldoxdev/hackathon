@@ -9,7 +9,7 @@ router = APIRouter(prefix="/admin", tags=["Administracion"])
 
 
 @router.post("/reset-demo")
-def reset_demo(perfil: str = "restaurante", db: Session = Depends(get_db)):
+def reset_demo(perfil: str = "taqueria", db: Session = Depends(get_db)):
     try:
         build_demo_data(db, perfil=perfil)
     except ValueError as exc:

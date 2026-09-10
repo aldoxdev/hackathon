@@ -19,7 +19,7 @@ from app.models import (
 RANDOM_SEED = 42
 MES_INICIO = (2025, 1)  # el historial demo arranca en enero 2025
 
-PERFIL_DEFAULT = "restaurante"
+PERFIL_DEFAULT = "taqueria"
 
 # Factor de conversion de cada unidad de compra hacia la unidad base del insumo (g, ml o pza),
 # igual que UNIDADES_COMPRA en el frontend (lib/types.ts). Antes esto estaba fijo a 1000 (solo
@@ -291,13 +291,19 @@ UNIDADES_BASE_MES_TAQUERIA = {
     "Taco al pastor": 900,
     "Taco de bistec": 500,
     "Taco de arrachera": 200,
-    "Taco de chuleta": 300,
+    # Volumen bajo a proposito: ya tiene el margen mas bajo del menu (13.8), asi que con pocas
+    # unidades cae tambien por debajo de la mediana de popularidad -> es el unico "Perro" del
+    # catalogo. Sin este platillo, ningun item combina "poco vendido" con "mal margen" a la vez.
+    "Taco de chuleta": 100,
     "Gringa de pastor": 150,
     "Gringa de bistec": 120,
     "Alambre": 80,
     "Queso fundido con chorizo": 60,
     "Papas con cebolla": 200,
-    "Refresco": 700,
+    # Por debajo de cada variedad de taco individual a proposito: un cliente pide varios tacos
+    # (a veces de distintos sabores) pero normalmente solo una bebida, asi que no es realista que
+    # el refresco compita cabeza a cabeza con el pastor por el primer lugar en unidades vendidas.
+    "Refresco": 400,
 }
 
 CONFIGURACION_TAQUERIA = {

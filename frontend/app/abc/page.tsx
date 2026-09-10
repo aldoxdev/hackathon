@@ -67,7 +67,7 @@ export default function AbcPage() {
         .reduce((s, v) => s + Number(v.cantidad_vendida), 0);
       const costoActual = calcularCostoReceta(receta.id, recetaInsumos, insumosById);
       const margenUnitario = Number(receta.precio_venta) - costoActual;
-      return { receta, unidadesVendidas, margenUnitario };
+      return { receta, unidadesVendidas, margenUnitario, costoActual };
     })
     .filter((f) => f.unidadesVendidas > 0);
 
@@ -147,6 +147,7 @@ export default function AbcPage() {
                 <tr>
                   <th className="px-4 py-3 font-medium">Platillo</th>
                   <th className="px-4 py-3 font-medium">Unidades vendidas</th>
+                  <th className="px-4 py-3 font-medium">Precio de venta</th>
                   <th className="px-4 py-3 font-medium">Margen por unidad</th>
                   <th className="px-4 py-3 font-medium">Categoria</th>
                 </tr>
@@ -158,6 +159,7 @@ export default function AbcPage() {
                     <tr key={f.receta.id}>
                       <td className="px-4 py-3">{f.receta.nombre}</td>
                       <td className="px-4 py-3">{f.unidadesVendidas}</td>
+                      <td className="px-4 py-3">{formatMoney(Number(f.receta.precio_venta))}</td>
                       <td className="px-4 py-3">{formatMoney(f.margenUnitario)}</td>
                       <td className="px-4 py-3">
                         <span

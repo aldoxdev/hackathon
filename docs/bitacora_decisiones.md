@@ -870,4 +870,28 @@ El usuario noto que Gastos Fijos tiene un boton "Copiar los de [mes anterior]" c
 
 ---
 
+## 2026-09-10 — Asistente con function calling: 8 herramientas + conocimiento de razonamiento (con Claude Code)
+
+**Motivación**: la version anterior del chatbot solo sabia de "este mes" (un contexto fijo). El usuario planteo preguntas reales que necesitan datos de otros periodos o comparaciones (ej. "¿por que tuve menos rentabilidad el año pasado que este año?") — imposible de responder sin cargar dos ventanas de datos distintas por pregunta. Se opto por function calling (el modelo pide los datos que necesita, en vez de recibir siempre el mismo resumen fijo).
+
+**Diseño de dos piezas, no solo funciones**:
+1. **8 herramientas** que el modelo puede invocar, todas parametrizadas por periodo (mes_actual/mes_pasado/anio_actual/anio_pasado/todo) para poder responder cualquier periodo o comparacion: `resumen_financiero`, `top_platillos`, `analisis_abc`, `detalle_receta`, `flujo_efectivo`, `detalle_gastos_fijos`, `detalle_consumo_indirecto`, `detalle_insumo`. Cada una replica en Python la logica exacta que ya existe en el frontend (`lib/indicadores.ts`, `flujo-efectivo/page.tsx`, la clasificacion ABC por mediana).
+2. **Conocimiento de razonamiento ya incluido en las instrucciones del sistema** (no una funcion): la explicacion del mecanismo rentabilidad-vs-flujo-de-efectivo, las recomendaciones por categoria ABC (Estrella/Caballo de batalla/Enigma/Perro), el rango sano de food cost %, y limites claros (no asesoria fiscal, no inventar como cambiarian las ventas ante un hipotetico de precio, si puede hacer aritmetica simple asumiendo el mismo volumen). Se determino en el analisis previo que las funciones por si solas resuelven "que datos necesito" pero no "que conclusion sacar" — eso hay que dárselo como conocimiento de fondo.
+
+**Mecanica**: ciclo de hasta 5 vueltas — el modelo pide una o mas funciones, el backend las ejecuta de verdad contra la base de datos, regresa el resultado, y el modelo puede pedir mas o ya responder. El frontend (`ChatWidget.tsx`) no se toco en nada — sigue llamando al mismo endpoint sin saber que paso adentro.
+
+**Reversibilidad**: se hizo un commit local de respaldo (`50cee2a`, sin push) antes de empezar, y la version anterior de contexto fijo se dejo intacta en el mismo archivo como `_construir_contexto_simple`, sin usarse — revertir es cambiar una linea en el endpoint si hiciera falta.
+
+**Verificado con preguntas reales, incluyendo los casos dificiles discutidos en el analisis**:
+- "¿Cuál es mi platillo más vendido?" → llamo `top_platillos`, respuesta correcta.
+- "¿Por qué tuve menos rentabilidad el año pasado que este año?" → llamo `resumen_financiero` dos veces (anio_pasado y anio_actual), comparo correctamente (10.6% vs 28.5%).
+- "¿Qué debería hacer para tener más utilidad?" → llamo `analisis_abc`, aplico las recomendaciones correctas por categoria a los platillos reales del negocio.
+- "Si subo el precio de la Hamburguesa clásica a 130, ¿cuánto ganaría más?" → calculo la aritmetica correcta (+$10/unidad, +$1,800/mes asumiendo mismo volumen) sin necesitar una funcion de simulacion.
+- "¿Por qué mi rentabilidad y mi flujo de efectivo no coinciden?" → llamo ambas funciones y aplico la explicacion del mecanismo correctamente.
+- "¿Cuánto ISR tengo que pagar?" → correctamente declinada, redirige a un contador.
+
+Probado tambien en la interfaz completa (burbuja de chat), no solo por endpoint directo. Demo dejado en perfil "restaurante". Sigue sin subirse a GitHub/Render, a peticion del usuario.
+
+---
+
 *Agregar nuevas entradas debajo de esta línea conforme avance el desarrollo.*

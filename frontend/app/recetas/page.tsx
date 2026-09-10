@@ -72,6 +72,7 @@ export default function RecetasPage() {
               <th className="px-4 py-3 font-medium">Precio de venta</th>
               <th className="px-4 py-3 font-medium">Costo insumos</th>
               <th className="px-4 py-3 font-medium">Costo de alimentos %</th>
+              <th className="px-4 py-3 font-medium">Margen por unidad</th>
               <th className="px-4 py-3 font-medium">IVA</th>
               <th className="px-4 py-3" />
             </tr>
@@ -79,14 +80,14 @@ export default function RecetasPage() {
           <tbody className="divide-y divide-zinc-100">
             {loading && (
               <tr>
-                <td className="px-4 py-4 text-zinc-500" colSpan={6}>
+                <td className="px-4 py-4 text-zinc-500" colSpan={7}>
                   Cargando...
                 </td>
               </tr>
             )}
             {!loading && recetas.length === 0 && (
               <tr>
-                <td className="px-4 py-4 text-zinc-500" colSpan={6}>
+                <td className="px-4 py-4 text-zinc-500" colSpan={7}>
                   Aun no hay recetas registradas.
                 </td>
               </tr>
@@ -94,6 +95,7 @@ export default function RecetasPage() {
             {recetas.map((receta) => {
               const costo = calcularCostoReceta(receta.id, recetaInsumos, insumosById);
               const foodCostPct = receta.precio_venta > 0 ? (costo / receta.precio_venta) * 100 : 0;
+              const margenUnitario = Number(receta.precio_venta) - costo;
               return (
                 <tr key={receta.id}>
                   <td className="px-4 py-3">
@@ -106,6 +108,7 @@ export default function RecetasPage() {
                   <td className="px-4 py-3">
                     <FoodCostBadge foodCostPct={foodCostPct} />
                   </td>
+                  <td className="px-4 py-3">{formatMoney(margenUnitario)}</td>
                   <td className="px-4 py-3">{TASA_IVA_LABEL[receta.tasa_iva]}</td>
                   <td className="px-4 py-3 text-right">
                     <VerLink href={`/recetas/ver?id=${receta.id}`} />

@@ -14,7 +14,7 @@ export default function ConfiguracionPage() {
   const [error, setError] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
   const [reseteando, setReseteando] = useState(false);
-  const [perfilDemo, setPerfilDemo] = useState<"restaurante" | "un_producto" | "taqueria">("restaurante");
+  const [perfilDemo, setPerfilDemo] = useState<"restaurante" | "un_producto" | "taqueria">("taqueria");
 
   const [nombreNegocio, setNombreNegocio] = useState("");
   const [eslogan, setEslogan] = useState("");

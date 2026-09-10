@@ -1,13 +1,21 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { MessageCircle, Send, X } from "lucide-react";
+import { MessageCircle, RotateCcw, Send, X } from "lucide-react";
 import { api } from "@/lib/api";
+import { ChatMessage } from "./ChatMessage";
 
 interface Mensaje {
   autor: "usuario" | "asistente";
   texto: string;
 }
+
+const PREGUNTAS_SUGERIDAS = [
+  "¿Como funciona esta aplicacion?",
+  "¿Como voy este mes?",
+  "¿Cual es mi platillo mas vendido?",
+  "¿Que puedo hacer para mejorar mis ganancias?",
+];
 
 export function ChatWidget() {
   const [abierto, setAbierto] = useState(false);
@@ -20,9 +28,7 @@ export function ChatWidget() {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensajes, abierto]);
 
-  async function handleEnviar(e: FormEvent) {
-    e.preventDefault();
-    const texto = pregunta.trim();
+  async function enviarPregunta(texto: string) {
     if (!texto || enviando) return;
 
     setMensajes((prev) => [...prev, { autor: "usuario", texto }]);
@@ -41,6 +47,11 @@ export function ChatWidget() {
     }
   }
 
+  function handleEnviar(e: FormEvent) {
+    e.preventDefault();
+    enviarPregunta(pregunta.trim());
+  }
+
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {abierto && (
@@ -50,22 +61,51 @@ export function ChatWidget() {
               <p className="text-sm font-medium text-zinc-900">Asistente de tu negocio</p>
               <p className="text-xs text-zinc-500">Pregunta sobre tus cifras de este mes</p>
             </div>
-            <button
-              type="button"
-              onClick={() => setAbierto(false)}
-              aria-label="Cerrar chat"
-              className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-1">
+              {mensajes.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setMensajes([])}
+                  aria-label="Nueva conversacion"
+                  title="Nueva conversacion"
+                  className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                >
+                  <RotateCcw size={16} />
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setAbierto(false)}
+                aria-label="Cerrar chat"
+                className="rounded p-1 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="flex-1 space-y-3 overflow-y-auto px-4 py-3">
             {mensajes.length === 0 && (
-              <p className="text-sm text-zinc-500">
-                Preguntame, por ejemplo: &quot;¿Como voy este mes?&quot; o &quot;¿Cual es mi platillo mas
-                vendido?&quot;. Esta informacion se comparte con OpenAI para poder responderte.
-              </p>
+              <div className="space-y-3">
+                <p className="text-sm text-zinc-500">
+                  Preguntame algo sobre tu negocio, o prueba una de estas:
+                </p>
+                <div className="flex flex-col gap-2">
+                  {PREGUNTAS_SUGERIDAS.map((sugerencia) => (
+                    <button
+                      key={sugerencia}
+                      type="button"
+                      onClick={() => enviarPregunta(sugerencia)}
+                      className="rounded-md border border-zinc-300 px-3 py-2 text-left text-sm text-zinc-700 hover:bg-zinc-50"
+                    >
+                      {sugerencia}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-xs text-zinc-400">
+                  Esta informacion se procesa con inteligencia artificial para poder responderte.
+                </p>
+              </div>
             )}
             {mensajes.map((m, i) => (
               <div
@@ -76,7 +116,7 @@ export function ChatWidget() {
                     : "bg-zinc-100 text-zinc-800"
                 }`}
               >
-                {m.texto}
+                {m.autor === "asistente" ? <ChatMessage texto={m.texto} /> : m.texto}
               </div>
             ))}
             {enviando && <div className="max-w-[85%] rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-500">Pensando...</div>}

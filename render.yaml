@@ -19,6 +19,10 @@ services:
           property: connectionString
       - key: CORS_ORIGINS
         value: http://localhost:3000,https://mis-cuentas-conmigo.onrender.com
+      # Sin valor aqui a proposito (nunca se debe commitear una llave real) — Render la pide
+      # en su propio dashboard al desplegar. Sin esto, el chatbot responde 503 en produccion.
+      - key: OPENAI_API_KEY
+        sync: false
       # Fijo a la version usada en desarrollo local (3.12). Sin esto, Render usa por defecto
       # la version de Python mas reciente (3.14 al momento de escribir esto), que rompe con
       # un error de "typing.Union" en SQLAlchemy 2.0.36 al leer anotaciones tipo "date | None".

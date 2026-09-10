@@ -205,6 +205,112 @@ CONFIGURACION_UN_PRODUCTO = {
     "fecha_saldo_inicial": date(2025, 1, 1),
 }
 
+# ============================================================
+# Perfil: Taqueria (Taqueria Los Compadres)
+#
+# El perfil "flagship" del equipo para este hackathon. Menu clasico de taqueria mexicana,
+# con variedad real de estructuras de costo: 4 proteinas a distintos precios, gringas (agregan
+# tortilla de harina y queso), un alambre completo (con tocino y pimiento), queso fundido,
+# papas y una bebida — para tener el mismo tipo de variedad que ya tenia el restaurante.
+# ============================================================
+
+INSUMOS_TAQUERIA = [
+    ("Carne al pastor", "masa", "directo", 0.11),
+    ("Bistec de res", "masa", "directo", 0.14),
+    ("Arrachera", "masa", "directo", 0.22),
+    ("Chuleta de cerdo", "masa", "directo", 0.09),
+    ("Tortilla de maiz", "pieza", "directo", 0.80),
+    ("Tortilla de harina", "pieza", "directo", 1.20),
+    ("Queso", "masa", "directo", 0.13),
+    ("Chorizo", "masa", "directo", 0.09),
+    ("Tocino", "masa", "directo", 0.11),
+    ("Pimiento", "masa", "directo", 0.04),
+    ("Papa", "masa", "directo", 0.03),
+    ("Refresco de lata", "pieza", "directo", 8.00),
+    # La cebolla (y el cilantro, la salsa) se sirven "al gusto" en la mesa y en los tacos por
+    # igual, en cualquier platillo del menu, sin que el precio cambie si se piden con o sin
+    # ellos — por eso van indirectos, compartidos entre TODO el menu, no como ingrediente
+    # medido de ninguna receta especifica (ni siquiera del alambre o las papas).
+    ("Cebolla", "masa", "indirecto", 0.02),
+    ("Cilantro", "masa", "indirecto", 0.04),
+    ("Salsa", "volumen", "indirecto", 0.04),
+    ("Servilletas", "pieza", "indirecto", 0.05),
+    ("Gas", "pieza", "indirecto", 15.00),
+]
+
+RECETAS_TAQUERIA = [
+    ("Taco al pastor", 20, "iva_16", [("Carne al pastor", 60), ("Tortilla de maiz", 1)]),
+    ("Taco de bistec", 22, "iva_16", [("Bistec de res", 60), ("Tortilla de maiz", 1)]),
+    ("Taco de arrachera", 35, "iva_16", [("Arrachera", 60), ("Tortilla de maiz", 1)]),
+    ("Taco de chuleta", 20, "iva_16", [("Chuleta de cerdo", 60), ("Tortilla de maiz", 1)]),
+    (
+        "Gringa de pastor",
+        48,
+        "iva_16",
+        [("Tortilla de harina", 1), ("Queso", 40), ("Carne al pastor", 60)],
+    ),
+    (
+        "Gringa de bistec",
+        50,
+        "iva_16",
+        [("Tortilla de harina", 1), ("Queso", 40), ("Bistec de res", 60)],
+    ),
+    (
+        "Alambre",
+        130,
+        "iva_16",
+        [("Bistec de res", 200), ("Tocino", 60), ("Pimiento", 50), ("Queso", 60)],
+    ),
+    ("Queso fundido con chorizo", 85, "iva_16", [("Queso", 150), ("Chorizo", 80)]),
+    ("Papas con cebolla", 45, "iva_16", [("Papa", 250)]),
+    ("Refresco", 28, "iva_16", [("Refresco de lata", 1)]),
+]
+
+GASTOS_FIJOS_TAQUERIA = [
+    ("Renta del local", 6000, "Renta", "banco", "iva_16"),
+    ("Nomina", 12000, "Nomina", "banco", "no_objeto"),
+    ("Luz", 1200, "Servicios", "banco", "iva_16"),
+    ("Agua", 500, "Servicios", "banco", "exento"),
+    ("Mantenimiento", 600, "Mantenimiento", "efectivo", "iva_16"),
+]
+
+CONSUMO_INDIRECTO_TAQUERIA = [
+    ("Cebolla", 300),
+    ("Cilantro", 200),
+    ("Salsa", 250),
+    ("Servilletas", 350),
+    ("Gas", 500),
+]
+
+COMPRAS_INSUMO_TAQUERIA = [
+    ("Carne al pastor", 54, "kg"),
+    ("Bistec de res", 46, "kg"),
+]
+
+UNIDADES_BASE_MES_TAQUERIA = {
+    "Taco al pastor": 900,
+    "Taco de bistec": 500,
+    "Taco de arrachera": 200,
+    "Taco de chuleta": 300,
+    "Gringa de pastor": 150,
+    "Gringa de bistec": 120,
+    "Alambre": 80,
+    "Queso fundido con chorizo": 60,
+    "Papas con cebolla": 200,
+    "Refresco": 700,
+}
+
+CONFIGURACION_TAQUERIA = {
+    "nombre_negocio": "Taqueria Los Compadres",
+    "eslogan": "Tacos como los de tu barrio",
+    "logo_url": None,
+    "color_primario": "#B91C1C",
+    "color_secundario": "#78350F",
+    "saldo_inicial_banco": 25000,
+    "saldo_inicial_efectivo": 15000,
+    "fecha_saldo_inicial": date(2025, 1, 1),
+}
+
 PERFILES = {
     "restaurante": {
         "insumos": INSUMOS_RESTAURANTE,
@@ -230,6 +336,17 @@ PERFILES = {
         "pct_banco": 0.20,
         "pct_traspaso_efectivo": 0.50,
         "configuracion": CONFIGURACION_UN_PRODUCTO,
+    },
+    "taqueria": {
+        "insumos": INSUMOS_TAQUERIA,
+        "recetas": RECETAS_TAQUERIA,
+        "gastos_fijos_base": GASTOS_FIJOS_TAQUERIA,
+        "consumo_indirecto_base": CONSUMO_INDIRECTO_TAQUERIA,
+        "compras_insumo_base": COMPRAS_INSUMO_TAQUERIA,
+        "unidades_base_mes": UNIDADES_BASE_MES_TAQUERIA,
+        "pct_banco": 0.45,
+        "pct_traspaso_efectivo": 0.70,
+        "configuracion": CONFIGURACION_TAQUERIA,
     },
 }
 

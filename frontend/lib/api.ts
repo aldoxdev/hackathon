@@ -112,8 +112,11 @@ export const api = {
     request<TraspasoCaja>(`/traspasos-caja/${id}`, { method: "PUT", body: JSON.stringify(data) }),
   deleteTraspasoCaja: (id: number) => request<void>(`/traspasos-caja/${id}`, { method: "DELETE" }),
 
-  resetDemo: (perfil: "restaurante" | "un_producto" = "restaurante") =>
+  resetDemo: (perfil: "restaurante" | "un_producto" | "taqueria" = "restaurante") =>
     request<{ status: string }>(`/admin/reset-demo?perfil=${perfil}`, { method: "POST" }),
+
+  chatAsistente: (pregunta: string) =>
+    request<{ respuesta: string }>("/asistente/chat", { method: "POST", body: JSON.stringify({ pregunta }) }),
 
   importExcel: async (file: File): Promise<ImportExcelResultado> => {
     const formData = new FormData();

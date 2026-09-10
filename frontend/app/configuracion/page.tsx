@@ -14,7 +14,7 @@ export default function ConfiguracionPage() {
   const [error, setError] = useState<string | null>(null);
   const [guardado, setGuardado] = useState(false);
   const [reseteando, setReseteando] = useState(false);
-  const [perfilDemo, setPerfilDemo] = useState<"restaurante" | "un_producto">("restaurante");
+  const [perfilDemo, setPerfilDemo] = useState<"restaurante" | "un_producto" | "taqueria">("restaurante");
 
   const [nombreNegocio, setNombreNegocio] = useState("");
   const [eslogan, setEslogan] = useState("");
@@ -75,6 +75,7 @@ export default function ConfiguracionPage() {
   const NOMBRES_PERFIL: Record<typeof perfilDemo, string> = {
     restaurante: "Sazon de Barrio (restaurante)",
     un_producto: "Chicharrones Dona Meche (un solo producto)",
+    taqueria: "Taqueria Los Compadres (taqueria)",
   };
 
   async function handleResetDemo() {
@@ -267,6 +268,20 @@ export default function ConfiguracionPage() {
             Un solo producto
             <span className="block text-xs font-normal text-red-700">
               Chicharrones Dona Meche — 1 receta, ~$20,000/mes
+            </span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setPerfilDemo("taqueria")}
+            className={`flex-1 rounded-md border px-4 py-2 text-left text-sm transition ${
+              perfilDemo === "taqueria"
+                ? "border-red-400 bg-white font-medium text-red-900 ring-1 ring-red-400"
+                : "border-red-200 bg-red-50 text-red-800 hover:bg-white"
+            }`}
+          >
+            Taqueria
+            <span className="block text-xs font-normal text-red-700">
+              Los Compadres — 10 platillos, ~$99,000/mes
             </span>
           </button>
         </div>

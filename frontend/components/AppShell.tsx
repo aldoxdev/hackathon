@@ -4,6 +4,7 @@ import { ReactNode, useState } from "react";
 import { Menu } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { BrandHeader } from "./BrandHeader";
+import { ChatWidget } from "./ChatWidget";
 import { PeriodoProvider } from "@/lib/periodo-context";
 
 export function AppShell({ children }: { children: ReactNode }) {
@@ -38,6 +39,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <main className="flex flex-1 flex-col overflow-y-auto pt-14 md:pt-0">
         <PeriodoProvider>{children}</PeriodoProvider>
       </main>
+
+      <ChatWidget />
     </div>
   );
 }

@@ -825,4 +825,49 @@ El usuario noto que Gastos Fijos tiene un boton "Copiar los de [mes anterior]" c
 
 ---
 
+## 2026-09-09 — Tercer perfil de demo: Taqueria Los Compadres (con Claude Code)
+
+**Contexto**: en una sesión de mentoría del hackathon (a la que el usuario no asistió), el mentor y el equipo concluyeron orientar el proyecto hacia una taquería — esto invierte la decisión original documentada en `CLAUDE.md` ("restaurante pequeño, menu variado, no una taqueria"), pero es una decisión consciente y explícita del equipo con el mentor, no un descuido. Este perfil nuevo es, en palabras del usuario, la fuente de datos con la que el equipo trabajará el resto del hackathon — no reemplaza a Restaurante ni a Un solo producto, que se conservan; ahora son tres perfiles.
+
+**Diseño del catálogo**: 10 platillos con variedad real de estructuras de costo (a diferencia de una taquería generica que solo varia la proteina) — 4 tacos (pastor, bistec, arrachera, chuleta — precios escalonados segun el corte), 2 gringas (agregan tortilla de harina y queso), un alambre completo (bistec + tocino + pimiento + queso, no solo bistec — se agregaron tocino y pimiento a peticion del usuario "para ser realistas"), queso fundido con chorizo, papas con cebolla, y un refresco (bebida de margen casi puro, mismo papel pedagogico que ya cumplia en el perfil Restaurante).
+
+**Decisión de diseño sobre la cebolla (y cilantro, salsa)**: se evaluó si la cebolla del alambre/papas debía ser un ingrediente directo de receta (con una cantidad especifica) dado que en esos platillos es un ingrediente cocinado, deliberado — a diferencia de la cebolla de mesa picada que se pone "al gusto" en los tacos. El usuario decidió tratarla como indirecta en TODOS los casos, sin excepcion, con una prueba clara: si el precio del platillo no cambia por pedirlo con o sin cebolla, es indirecta — sin importar si es un taco o un alambre. Consistente con el ejemplo ya fijado en `CLAUDE.md` ("cebolla de mesa" como insumo indirecto tipico). Cebolla, cilantro y salsa quedaron como 3 insumos indirectos compartidos por las 10 recetas del menu, ninguno amarrado a una receta especifica.
+
+**Verificado con script contra base de prueba antes de tocar la real**: sin regresion en los otros dos perfiles (Restaurante $78,050.00/32.8%, Un producto $19,800.00/67.2%, identicos a antes). Taqueria Los Compadres: $99,300.00 en ventas (1,094 transacciones), food cost 32.1% en conjunto, ticket promedio $90.77, margen de contribucion $65,800.00, gastos fijos $20,300.00 (renta+nomina+servicios, estructura completa como un negocio establecido, no un changarro informal), utilidad neta $45,500.00, **rentabilidad neta 45.8%** — el perfil mas rentable de los tres, buen argumento de "flagship". El food cost % por platillo vario deliberadamente entre 16.7% (Papas con cebolla) y 41.8% (Taco de bistec), dando variedad real de colores (verde/amarillo) para que el Analisis ABC de platillos tenga sentido mostrar las 4 categorias (Estrella/Caballo de batalla/Enigma/Perro). Confirmado en navegador: Dashboard, Recetas y ABC muestran las cifras exactas validadas. Demo dejado en perfil "restaurante" (default) al terminar la prueba.
+
+---
+
+## 2026-09-10 — Widget de tips rotativos en el Dashboard (con Claude Code)
+
+**Motivación**: al analizar que tan intuitiva es la app para alguien sin experiencia en software administrativo (pero comodo con WhatsApp/redes), se identifico que el Dashboard bombardea con 7 terminos financieros de golpe, y que hay confusiones conceptuales reales (ej. por que Rentabilidad y Flujo de Efectivo no coinciden) que ni siquiera el usuario tenia del todo claras. Se evaluo integrar IA real (OpenAI) para esto y para un chatbot de negocio, pero se decidio empezar con la version sin costo/sin dependencias: un widget de tips rotativos con contenido pre-escrito, no generado en vivo — misma sensacion de "ayuda presente" sin necesitar API key, backend nuevo, ni riesgo de costo.
+
+**Diseño**: tarjeta al final del Dashboard (despues de los botones de Estado de Resultados / ABC), con icono de foco, texto del tip, contador (ej. "3/14") y flechas para navegar manualmente — el usuario controla el ritmo, no cambia solo mientras lee (mismo patron que un carrusel de stories).
+
+**Contenido**: 14 tips en 5 categorias — vocabulario basico, confusiones conceptuales (rentabilidad vs flujo de efectivo, margen vs ganancia, utilidad bruta vs neta, por que el historial no se recalcula, IVA cobrado no es tuyo), como interpretar KPIs, flujo de trabajo (cadencia diaria/mensual), y funciones poco descubiertas (precarga de gastos fijos, traspasos caja-banco).
+
+**Bug de logica detectado y corregido antes de construir**: un borrador temprano decia "si tu Rentabilidad se ve baja, revisa si ya capturaste tus Gastos Fijos" — el usuario detecto que esto es una contradiccion (capturar MAS gastos fijos bajaria la rentabilidad, no explicaria por que ya esta baja). Se reemplazo por el fenomeno real y ya validado en esta sesion: a inicios de mes, los Gastos Fijos se registran completos desde el dia 1 mientras las ventas apenas se acumulan, dando una rentabilidad temporalmente baja que se ajusta con los dias.
+
+**Verificado**: cada uno de los 14 tips se reviso contra el codigo real de calculo (`lib/indicadores.ts`, Estado de Resultados, Flujo de Efectivo) antes de escribirse, no solo redactados de oido. Probado en navegador (desktop y movil 375px): las flechas avanzan/retroceden correctamente, el contador es preciso, el link "Ir alla" del tip de Gastos Fijos apunta a `/gastos-fijos` y funciona, sin desbordes de layout en ningun tamaño de pantalla.
+
+**Nota**: por peticion explicita del usuario, estos cambios se quedan solo en local por ahora (sin commit ni push) mientras se sigue analizando el resto del "toque final" de la app.
+
+---
+
+## 2026-09-10 — Chatbot del asistente conectado a OpenAI (con Claude Code)
+
+**Que se construyo**: el "toque final" que se venia analizando — un asistente de IA en burbuja flotante (abajo a la derecha, disponible en toda la app via `AppShell.tsx`), donde el usuario pregunta libremente sobre su negocio.
+
+- **Backend** (`routers/asistente.py`, nuevo): endpoint `POST /asistente/chat`. Construye un contexto de negocio real (ventas del mes, costo directo/indirecto, margen, gastos fijos, utilidad neta, rentabilidad neta %, top 3 platillos mas vendidos) directamente de la base de datos, lo arma en un prompt de sistema, y llama a la API de OpenAI (`gpt-4o-mini` via el SDK oficial `openai==1.58.1`). La API key vive solo en `OPENAI_API_KEY` (variable de entorno backend), nunca se expone al frontend.
+- **Frontend** (`components/ChatWidget.tsx`, nuevo): burbuja circular fija, se abre en una ventana de chat con historial de la sesion (no persistente entre recargas), input y boton de enviar. Incluye una nota de transparencia: "Esta informacion se comparte con OpenAI para poder responderte."
+
+**Bug real de entorno local encontrado y corregido en el camino (no relacionado con OpenAI)**: durante las pruebas, 5 API keys distintas fallaban todas con el mismo error exacto (`token_invalidated`), incluso después de agregar metodo de pago a la cuenta. Se descubrio que existia una **variable de entorno de Windows a nivel Usuario** llamada `OPENAI_API_KEY` (configurada "hace tiempo" segun el usuario) que tenia prioridad sobre el archivo `.env` del proyecto — pydantic-settings usa las variables de entorno del sistema operativo por encima del archivo `.env` cuando ambas existen con el mismo nombre. El backend estaba silenciosamente usando siempre esa key vieja del sistema, sin importar cuantas veces se actualizara `.env`. Se elimino la variable a nivel Usuario (registro) y del proceso activo. Esto NO resolvio el error de OpenAI (que resulto ser un problema de cuenta aparte, ya arreglado del lado del usuario), pero es un bug real y independiente que vale la pena tener documentado — cualquiera que configure este proyecto en una maquina con esa variable ya definida globalmente tendria el mismo problema silencioso.
+
+**Manejo de seguridad de la API key**: el usuario pego la primera key generada directamente en el chat de Claude Code — se le advirtio de inmediato del riesgo de exposicion (transcripciones/historiales) y se le recomendo regenerarla. Las keys subsecuentes se pasaron editando `backend/.env` directamente, evitando que quedaran en el texto de la conversacion. `backend/.env` esta en `.gitignore` (confirmado antes de escribir nada ahi) — la key real nunca se subio ni se subira a git; `backend/.env.example` solo tiene el nombre de la variable, sin valor.
+
+**Verificado**: probado primero por endpoint directo (`curl`), luego en la interfaz completa — la burbuja abre/cierra correctamente, el mensaje del usuario y la respuesta del asistente se muestran con el estilo correcto, y la respuesta cito datos reales y exactos del negocio actual (ej. "tu platillo mas vendido es la hamburguesa clasica, con ventas totales de $21,600.00" — cifra verificada correcta contra la base de datos).
+
+**Nota**: por instruccion del usuario, estos cambios (y los anteriores de esta sesion: widget de tips, ajustes del Dashboard) siguen sin subirse a git — se pidio explicitamente esperar antes de hacer commit/push mientras se sigue analizando y probando.
+
+---
+
 *Agregar nuevas entradas debajo de esta línea conforme avance el desarrollo.*

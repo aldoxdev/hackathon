@@ -20,6 +20,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { TrendBadge } from "@/components/TrendBadge";
 import { VentasTrendChart } from "@/components/VentasTrendChart";
 import { RentabilidadMeter } from "@/components/RentabilidadMeter";
+import { TipsWidget } from "@/components/TipsWidget";
 
 interface ChecklistItem {
   label: string;
@@ -100,18 +101,6 @@ export default function Home() {
     gastosFijosTotales
   );
   const utilidadNeta = ind.margenContribucionTotal - gastosFijosTotales;
-  const gastosFijosAnteriorTotales = indAnterior
-    ? gastosFijos
-        .filter((g) => fechaEnPeriodo(g.periodo, periodo, true))
-        .reduce((s, g) => s + Number(g.monto_mensual), 0)
-    : 0;
-  const rentabilidadNetaAnteriorPct = indAnterior
-    ? calcularRentabilidadNetaPct(
-        indAnterior.ventasTotales,
-        indAnterior.margenContribucionTotal,
-        gastosFijosAnteriorTotales
-      )
-    : null;
 
   const ventasDelPeriodoBanco = ventas.filter(
     (v) => v.medio_pago === "banco" && fechaEnPeriodo(v.fecha, periodo)
@@ -194,16 +183,6 @@ export default function Home() {
           valor={puntoEquilibrio !== null ? `${Math.ceil(puntoEquilibrio)} platillos/mes` : "N/D"}
         />
         <IndicadorCard
-          titulo="Rentabilidad neta"
-          ayuda="El porcentaje de tus ventas que se convierte en ganancia real, despues de insumos y gastos fijos."
-          valor={`${rentabilidadNetaPct.toFixed(1)}%`}
-          tendencia={
-            rentabilidadNetaAnteriorPct !== null && (
-              <TrendBadge variacionPct={calcularVariacionPct(rentabilidadNetaPct, rentabilidadNetaAnteriorPct)} />
-            )
-          }
-        />
-        <IndicadorCard
           titulo="Ticket promedio"
           ayuda="En promedio, cuanto gasta un cliente cada vez que te compra."
           valor={formatMoney(ind.ticketPromedio)}
@@ -243,6 +222,8 @@ export default function Home() {
           Ver analisis ABC de platillos
         </Link>
       </div>
+
+      <TipsWidget />
     </div>
   );
 }

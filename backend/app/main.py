@@ -7,6 +7,7 @@ from app import models  # noqa: F401 - registra los modelos en Base.metadata
 from app.models import Insumo
 from app.routers import (
     admin,
+    asistente,
     compras_insumo,
     configuracion_negocio,
     consumo_indirecto,
@@ -45,6 +46,7 @@ app.include_router(consumo_indirecto.router)
 app.include_router(ventas.router)
 app.include_router(gastos_fijos.router)
 app.include_router(traspasos_caja.router)
+app.include_router(asistente.router)
 
 
 @app.get("/health")

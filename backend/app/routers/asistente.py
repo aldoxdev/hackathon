@@ -1,3 +1,4 @@
+import calendar
 import json
 import re
 from datetime import date, timedelta
@@ -50,67 +51,74 @@ PERIODO_ENUM = ["mes_actual", "mes_pasado", "anio_actual", "anio_pasado", "todo"
 
 # ============================================================
 # Resolucion de periodos (equivalente en Python a lib/periodo.ts del frontend)
+#
+# IMPORTANTE: filtrar columnas Date con LIKE o comparandolas contra un string (ej.
+# Venta.fecha.like("2026-09%")) funciona en SQLite (tipado flexible, usado en desarrollo local)
+# pero truena en PostgreSQL (usado en produccion) con "operator does not exist: date ~~ unknown"
+# — Postgres no tiene LIKE para columnas de fecha real. Por eso todo aqui filtra por RANGO usando
+# objetos date de verdad (>=, <=), que funciona igual en ambos motores.
 # ============================================================
 
-def _prefijo_periodo(periodo: str, hoy: date) -> str | None:
-    """Prefijo de fecha (YYYY o YYYY-MM) para filtrar con LIKE, o None para 'todo'."""
+def _rango_periodo(periodo: str, hoy: date) -> tuple[date, date] | None:
+    """(inicio, fin) inclusive para PERTENENCIA a un periodo (equivalente a fechaEnPeriodo del
+    frontend) — 'este mes'/'este año' es el mes/año COMPLETO, sin acotar a hoy (igual que en el
+    resto de la app: el 10 de septiembre, 'este mes' sigue siendo todo septiembre). None para
+    'todo' (sin filtro)."""
     if periodo == "mes_actual":
-        return hoy.strftime("%Y-%m")
+        inicio = hoy.replace(day=1)
+        ultimo_dia = calendar.monthrange(hoy.year, hoy.month)[1]
+        return inicio, hoy.replace(day=ultimo_dia)
     if periodo == "mes_pasado":
         primer_dia_mes_actual = hoy.replace(day=1)
-        ultimo_dia_mes_pasado = primer_dia_mes_actual - timedelta(days=1)
-        return ultimo_dia_mes_pasado.strftime("%Y-%m")
+        fin = primer_dia_mes_actual - timedelta(days=1)
+        return fin.replace(day=1), fin
     if periodo == "anio_actual":
-        return str(hoy.year)
+        return date(hoy.year, 1, 1), date(hoy.year, 12, 31)
     if periodo == "anio_pasado":
-        return str(hoy.year - 1)
+        return date(hoy.year - 1, 1, 1), date(hoy.year - 1, 12, 31)
     if periodo == "todo":
         return None
     raise ValueError(f"Periodo desconocido: {periodo}")
 
 
-def _fin_periodo(periodo: str, hoy: date) -> str:
+def _fin_periodo(periodo: str, hoy: date) -> date:
+    """Fecha de corte (inclusive) para un SALDO ACUMULADO (equivalente a finDePeriodo del
+    frontend) — a diferencia de _rango_periodo, aqui 'mes_actual'/'anio_actual'/'todo' SI se
+    acotan a hoy, porque no tiene sentido acumular saldo hasta una fecha futura."""
     if periodo in ("mes_actual", "anio_actual", "todo"):
-        return hoy.isoformat()
+        return hoy
     if periodo == "mes_pasado":
-        primer_dia_mes_actual = hoy.replace(day=1)
-        return (primer_dia_mes_actual - timedelta(days=1)).isoformat()
+        return hoy.replace(day=1) - timedelta(days=1)
     if periodo == "anio_pasado":
-        return date(hoy.year - 1, 12, 31).isoformat()
+        return date(hoy.year - 1, 12, 31)
     raise ValueError(f"Periodo desconocido: {periodo}")
 
 
-def _venta_query(db: Session, prefijo: str | None) -> list[Venta]:
+def _venta_query(db: Session, rango: tuple[date, date] | None) -> list[Venta]:
     q = db.query(Venta)
-    if prefijo:
-        q = q.filter(Venta.fecha.like(f"{prefijo}%"))
+    if rango:
+        q = q.filter(Venta.fecha >= rango[0], Venta.fecha <= rango[1])
     return q.all()
 
 
-def _compra_insumo_query(db: Session, prefijo: str | None) -> list[CompraInsumo]:
+def _compra_insumo_query(db: Session, rango: tuple[date, date] | None) -> list[CompraInsumo]:
     q = db.query(CompraInsumo)
-    if prefijo:
-        q = q.filter(CompraInsumo.fecha.like(f"{prefijo}%"))
+    if rango:
+        q = q.filter(CompraInsumo.fecha >= rango[0], CompraInsumo.fecha <= rango[1])
     return q.all()
 
 
-def _gasto_fijo_query(db: Session, prefijo: str | None) -> list[GastoFijo]:
+def _gasto_fijo_query(db: Session, rango: tuple[date, date] | None) -> list[GastoFijo]:
     q = db.query(GastoFijo)
-    if prefijo:
-        if len(prefijo) == 7:  # YYYY-MM
-            q = q.filter(GastoFijo.periodo == f"{prefijo}-01")
-        else:  # YYYY
-            q = q.filter(GastoFijo.periodo.like(f"{prefijo}-%"))
+    if rango:
+        q = q.filter(GastoFijo.periodo >= rango[0], GastoFijo.periodo <= rango[1])
     return q.all()
 
 
-def _consumo_indirecto_query(db: Session, prefijo: str | None) -> list[ConsumoIndirecto]:
+def _consumo_indirecto_query(db: Session, rango: tuple[date, date] | None) -> list[ConsumoIndirecto]:
     q = db.query(ConsumoIndirecto)
-    if prefijo:
-        if len(prefijo) == 7:
-            q = q.filter(ConsumoIndirecto.periodo == f"{prefijo}-01")
-        else:
-            q = q.filter(ConsumoIndirecto.periodo.like(f"{prefijo}-%"))
+    if rango:
+        q = q.filter(ConsumoIndirecto.periodo >= rango[0], ConsumoIndirecto.periodo <= rango[1])
     return q.all()
 
 
@@ -124,16 +132,16 @@ def _suma_por_medio(items, campo_monto: str, medio: MedioPago) -> float:
 
 def tool_resumen_financiero(db: Session, periodo: str) -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
+    rango = _rango_periodo(periodo, hoy)
 
-    ventas = _venta_query(db, prefijo)
+    ventas = _venta_query(db, rango)
     ventas_totales = sum(float(v.total_venta) for v in ventas)
     costo_directo = sum(float(v.costo_insumos_snapshot) for v in ventas)
     num_ventas = len(ventas)
     unidades = sum(v.cantidad_vendida for v in ventas)
 
-    costo_indirecto = sum(float(c.monto_gastado) for c in _consumo_indirecto_query(db, prefijo))
-    gastos_fijos_totales = sum(float(g.monto_mensual) for g in _gasto_fijo_query(db, prefijo))
+    costo_indirecto = sum(float(c.monto_gastado) for c in _consumo_indirecto_query(db, rango))
+    gastos_fijos_totales = sum(float(g.monto_mensual) for g in _gasto_fijo_query(db, rango))
 
     margen = ventas_totales - costo_directo - costo_indirecto
     utilidad_neta = margen - gastos_fijos_totales
@@ -164,8 +172,8 @@ def tool_resumen_financiero(db: Session, periodo: str) -> dict:
 
 def tool_top_platillos(db: Session, periodo: str, cantidad: int = 5, criterio: str = "ventas_totales") -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
-    ventas = _venta_query(db, prefijo)
+    rango = _rango_periodo(periodo, hoy)
+    ventas = _venta_query(db, rango)
     recetas = {r.id: r for r in db.query(Receta).all()}
 
     acumulado: dict[int, dict] = {}
@@ -199,8 +207,8 @@ def tool_top_platillos(db: Session, periodo: str, cantidad: int = 5, criterio: s
 
 def tool_analisis_abc(db: Session, periodo: str) -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
-    ventas = _venta_query(db, prefijo)
+    rango = _rango_periodo(periodo, hoy)
+    ventas = _venta_query(db, rango)
     recetas = {r.id: r for r in db.query(Receta).all()}
 
     acumulado: dict[int, dict] = {}
@@ -291,15 +299,15 @@ def tool_detalle_receta(db: Session, nombre: str) -> dict:
 
 def tool_flujo_efectivo(db: Session, periodo: str) -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
+    rango = _rango_periodo(periodo, hoy)
 
-    ventas = _venta_query(db, prefijo)
-    gastos = _gasto_fijo_query(db, prefijo)
-    consumo = _consumo_indirecto_query(db, prefijo)
-    compras = _compra_insumo_query(db, prefijo)
+    ventas = _venta_query(db, rango)
+    gastos = _gasto_fijo_query(db, rango)
+    consumo = _consumo_indirecto_query(db, rango)
+    compras = _compra_insumo_query(db, rango)
     traspasos_q = db.query(TraspasoCaja)
-    if prefijo:
-        traspasos_q = traspasos_q.filter(TraspasoCaja.fecha.like(f"{prefijo}%"))
+    if rango:
+        traspasos_q = traspasos_q.filter(TraspasoCaja.fecha >= rango[0], TraspasoCaja.fecha <= rango[1])
     traspasos = traspasos_q.all()
 
     ingresos_efectivo = _suma_por_medio(ventas, "total_venta", MedioPago.efectivo)
@@ -324,7 +332,7 @@ def tool_flujo_efectivo(db: Session, periodo: str) -> dict:
     # Saldo estimado acumulado: desde la fecha de saldo inicial hasta el fin del periodo pedido.
     config = db.get(ConfiguracionNegocio, 1)
     fin_periodo = _fin_periodo(periodo, hoy)
-    fecha_inicio_saldo = config.fecha_saldo_inicial.isoformat() if config else fin_periodo
+    fecha_inicio_saldo = config.fecha_saldo_inicial if config else fin_periodo
 
     ventas_acum = db.query(Venta).filter(Venta.fecha >= fecha_inicio_saldo, Venta.fecha <= fin_periodo).all()
     compras_acum = db.query(CompraInsumo).filter(
@@ -334,8 +342,8 @@ def tool_flujo_efectivo(db: Session, periodo: str) -> dict:
         TraspasoCaja.fecha >= fecha_inicio_saldo, TraspasoCaja.fecha <= fin_periodo
     ).all()
 
-    mes_inicio_saldo = fecha_inicio_saldo[:7]
-    mes_fin_periodo = fin_periodo[:7]
+    mes_inicio_saldo = fecha_inicio_saldo.isoformat()[:7]
+    mes_fin_periodo = fin_periodo.isoformat()[:7]
     gastos_acum = [
         g for g in db.query(GastoFijo).all() if mes_inicio_saldo <= g.periodo.isoformat()[:7] <= mes_fin_periodo
     ]
@@ -380,8 +388,8 @@ def tool_flujo_efectivo(db: Session, periodo: str) -> dict:
 
 def tool_detalle_gastos_fijos(db: Session, periodo: str) -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
-    gastos = _gasto_fijo_query(db, prefijo)
+    rango = _rango_periodo(periodo, hoy)
+    gastos = _gasto_fijo_query(db, rango)
     por_concepto: dict[str, float] = {}
     for g in gastos:
         por_concepto[g.concepto] = por_concepto.get(g.concepto, 0) + float(g.monto_mensual)
@@ -391,8 +399,8 @@ def tool_detalle_gastos_fijos(db: Session, periodo: str) -> dict:
 
 def tool_detalle_consumo_indirecto(db: Session, periodo: str) -> dict:
     hoy = date.today()
-    prefijo = _prefijo_periodo(periodo, hoy)
-    consumo = _consumo_indirecto_query(db, prefijo)
+    rango = _rango_periodo(periodo, hoy)
+    consumo = _consumo_indirecto_query(db, rango)
     insumos = {i.id: i.nombre for i in db.query(Insumo).all()}
     por_insumo: dict[str, float] = {}
     for c in consumo:

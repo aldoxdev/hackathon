@@ -483,6 +483,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Con esto, el Resumen, el Analisis ABC, el Flujo de Efectivo y el Estado de Resultados se calculan solos, sin captura adicional.",
         ],
         "ruta": "/",
+        "nombre": "Resumen",
     },
     "resumen": {
         "objetivo": "Ver de un vistazo como va tu negocio: ventas, costos, margen, punto de equilibrio y rentabilidad del periodo que elijas.",
@@ -491,6 +492,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Los indicadores se actualizan solos conforme registras ventas y gastos en las demas pantallas, no hay nada que capturar aqui.",
         ],
         "ruta": "/",
+        "nombre": "Resumen",
     },
     "insumos": {
         "objetivo": "Registrar cada ingrediente que usas, para que el sistema calcule el costo de tus recetas solo.",
@@ -502,6 +504,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Si es indirecto: escribe a mano el costo de referencia por unidad.",
         ],
         "ruta": "/insumos",
+        "nombre": "Insumos",
     },
     "recetas": {
         "objetivo": "Armar tus platillos a partir de los insumos ya registrados, para saber el costo real y el costo de alimentos % de cada uno.",
@@ -511,6 +514,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Agrega cada insumo que lleva el platillo uno por uno, con la cantidad que usa — el costo total y el costo de alimentos % se calculan solos conforme agregas insumos.",
         ],
         "ruta": "/recetas",
+        "nombre": "Recetas",
     },
     "ventas": {
         "objetivo": "Registrar cada venta que haces, para llevar el control real de ingresos y saber que tan rentable es cada platillo.",
@@ -519,6 +523,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "El costo de insumos de esa venta se congela al momento de registrarla, aunque despues cambie el precio de los insumos, para no distorsionar el historial.",
         ],
         "ruta": "/ventas",
+        "nombre": "Ventas",
     },
     "gastos_fijos": {
         "objetivo": "Capturar tus gastos que se repiten cada mes (renta, nomina, luz, etc.), para calcular tu utilidad neta real.",
@@ -527,6 +532,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Si tus gastos no cambiaron respecto al mes anterior, puedes copiarlos con un clic en vez de volver a capturarlos todos.",
         ],
         "ruta": "/gastos-fijos",
+        "nombre": "Gastos fijos",
     },
     "consumo_indirecto": {
         "objetivo": "Registrar cuanto gastaste al mes en insumos de uso general que no tienen receta propia (servilletas, cebolla de mesa, gas, etc.).",
@@ -535,6 +541,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Elige el insumo indirecto, escribe el monto gastado ese mes y el medio de pago.",
         ],
         "ruta": "/consumo-indirecto",
+        "nombre": "Consumo indirecto",
     },
     "compras_insumos": {
         "objetivo": "Registrar cuando y cuanto pagaste realmente por tus insumos directos — alimenta el Flujo de Efectivo (es distinto del costeo de tus recetas).",
@@ -543,11 +550,13 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Marca 'Actualizar el costo de referencia de este insumo' si quieres que este precio se use de ahora en adelante para costear tus recetas — desmarcala si fue una compra atipica que no representa tu costo normal.",
         ],
         "ruta": "/egresos/compras-insumos",
+        "nombre": "Compra de insumos",
     },
     "traspasos_caja": {
         "objetivo": "Registrar cuando mueves dinero entre tu caja (efectivo) y el banco, para que el Flujo de Efectivo refleje donde esta realmente tu dinero.",
         "pasos": ["Escribe el monto y elige la direccion: de caja a banco, o de banco a caja."],
         "ruta": "/traspasos-caja",
+        "nombre": "Traspasos caja-banco",
     },
     "abc": {
         "objetivo": "Ver que platillos conviene destacar, promover, ajustar de precio o quitar del menu, cruzando popularidad contra margen.",
@@ -556,6 +565,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Cada platillo cae en una de 4 categorias: Estrella, Caballo de batalla, Enigma o Perro.",
         ],
         "ruta": "/abc",
+        "nombre": "Analisis ABC",
     },
     "flujo_efectivo": {
         "objetivo": "Ver cuanto dinero tienes de verdad, en efectivo y en banco — distinto de la rentabilidad, porque cuenta el dinero cuando entra o sale, no cuando se vende.",
@@ -564,11 +574,13 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Si esta cifra no coincide con tu Rentabilidad neta, normalmente es porque compraste insumos que todavia no se han vendido, o viceversa.",
         ],
         "ruta": "/flujo-efectivo",
+        "nombre": "Flujo de efectivo",
     },
     "estado_resultados": {
         "objetivo": "Generar un reporte financiero formal, pensado para presentarlo ante un banco o entidad de financiamiento.",
         "pasos": ["Elige el periodo a reportar — se arma solo con lo que ya capturaste en las demas pantallas."],
         "ruta": "/estado-resultados",
+        "nombre": "Estado de resultados",
     },
     "configuracion": {
         "objetivo": "Personalizar el nombre, colores y saldos iniciales de tu negocio, y reiniciar los datos de demostracion.",
@@ -578,11 +590,13 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "Puedes reiniciar los datos de demostracion eligiendo un perfil (restaurante, un solo producto, o taqueria).",
         ],
         "ruta": "/configuracion",
+        "nombre": "Configuracion",
     },
     "glosario": {
         "objetivo": "Consultar el significado de los terminos financieros que usa la app (costo de alimentos, margen de contribucion, punto de equilibrio, etc.) en lenguaje sencillo.",
         "pasos": [],
         "ruta": "/glosario",
+        "nombre": "Glosario",
     },
     "importar": {
         "objetivo": "Cargar de golpe varios insumos, recetas y ventas desde un archivo de Excel, en vez de capturarlos uno por uno.",
@@ -592,6 +606,7 @@ AYUDA_PANTALLAS: dict[str, dict] = {
             "El orden de las hojas dentro del archivo no importa, siempre se procesan en el orden correcto.",
         ],
         "ruta": "/importar",
+        "nombre": "Importar Excel",
     },
 }
 
@@ -960,13 +975,21 @@ def _quitar_dominio_de_links(texto: str) -> str:
     return re.sub(r"\]\(https?://[^/\s)]+(/[^)]*)?\)", lambda m: f"]({m.group(1) or '/'})", texto)
 
 
-def _agregar_links_faltantes(texto: str, herramientas_usadas: set[str]) -> str:
+def _agregar_links_faltantes(texto: str, herramientas_usadas: set[str], pantallas_pedidas: set[str]) -> str:
     ya_presentes = set(re.findall(r"\((/[^)]*)\)", texto))
     faltantes: dict[str, str] = {}
     for nombre_tool in herramientas_usadas:
         pagina = TOOL_A_PAGINA.get(nombre_tool)
         if pagina and pagina[0] not in ya_presentes:
             faltantes[pagina[0]] = pagina[1]
+    # ayuda_pantalla no tiene una sola pagina fija por herramienta (depende de que pantalla se
+    # haya pedido), asi que se resuelve aparte usando la ruta real de cada pantalla consultada —
+    # sin esto, los links a las pantallas mencionadas en una respuesta de ayuda son puro adorno
+    # voluntario del modelo, y a veces los pone y a veces no.
+    for pantalla in pantallas_pedidas:
+        info = AYUDA_PANTALLAS.get(pantalla)
+        if info and info["ruta"] not in ya_presentes and info["ruta"] not in faltantes:
+            faltantes[info["ruta"]] = info["nombre"]
     if not faltantes:
         return texto
     links = ", ".join(f"[{nombre}]({ruta})" for ruta, nombre in faltantes.items())
@@ -1070,6 +1093,7 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
 
     herramientas_usadas: set[str] = set()
     cifras_confiables: set[float] = set()
+    pantallas_pedidas: set[str] = set()
 
     try:
         for _ in range(5):  # limite de vueltas para evitar loops infinitos si el modelo insiste
@@ -1084,7 +1108,7 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
             if not mensaje.tool_calls:
                 texto = _quitar_dominio_de_links(mensaje.content or "")
                 texto = _corregir_cifras(texto, cifras_confiables)
-                texto = _agregar_links_faltantes(texto, herramientas_usadas)
+                texto = _agregar_links_faltantes(texto, herramientas_usadas, pantallas_pedidas)
                 return ChatResponse(respuesta=texto)
 
             mensajes.append(mensaje.model_dump(exclude_unset=True))
@@ -1093,6 +1117,8 @@ def chat(payload: ChatRequest, db: Session = Depends(get_db)):
                 herramientas_usadas.add(nombre_funcion)
                 try:
                     args = json.loads(tool_call.function.arguments or "{}")
+                    if nombre_funcion == "ayuda_pantalla" and "pantalla" in args:
+                        pantallas_pedidas.add(args["pantalla"])
                     resultado = TOOL_DISPATCH[nombre_funcion](db, args)
                     cifras_confiables |= _extraer_numeros(resultado)
                 except Exception as exc:  # noqa: BLE001 - se le regresa el error al modelo, no se rompe la app

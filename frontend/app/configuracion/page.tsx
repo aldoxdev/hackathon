@@ -1,14 +1,17 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { api } from "@/lib/api";
 import { HelpIcon } from "@/components/HelpIcon";
+import { cerrarSesion } from "@/lib/auth";
 
 function hoyISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
 export default function ConfiguracionPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,6 +80,11 @@ export default function ConfiguracionPage() {
     un_producto: "Chicharrones Dona Meche (un solo producto)",
     taqueria: "Taqueria Los Compadres (taqueria)",
   };
+
+  function handleCerrarSesion() {
+    cerrarSesion();
+    router.push("/login");
+  }
 
   async function handleResetDemo() {
     const nombrePerfil = NOMBRES_PERFIL[perfilDemo];
@@ -233,6 +241,22 @@ export default function ConfiguracionPage() {
           </button>
         </div>
       </form>
+
+      <div className="flex items-center justify-between rounded-lg border border-zinc-200 bg-white p-6">
+        <div>
+          <h2 className="text-sm font-medium text-zinc-900">Sesion</h2>
+          <p className="mt-1 text-sm text-zinc-600">
+            Cierra tu sesion de demo para volver a ver la pantalla de inicio de sesion.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={handleCerrarSesion}
+          className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+        >
+          Cerrar sesion
+        </button>
+      </div>
 
       <div className="rounded-lg border border-red-200 bg-red-50 p-6">
         <h2 className="text-sm font-medium text-red-900">Zona de datos demo</h2>

@@ -22,11 +22,26 @@ export function ChatWidget() {
   const [mensajes, setMensajes] = useState<Mensaje[]>([]);
   const [pregunta, setPregunta] = useState("");
   const [enviando, setEnviando] = useState(false);
+  const [mostrarBienvenida, setMostrarBienvenida] = useState(false);
   const finRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     finRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [mensajes, abierto]);
+
+  useEffect(() => {
+    const aparecer = setTimeout(() => setMostrarBienvenida(true), 900);
+    const desaparecer = setTimeout(() => setMostrarBienvenida(false), 10000);
+    return () => {
+      clearTimeout(aparecer);
+      clearTimeout(desaparecer);
+    };
+  }, []);
+
+  function abrirChat() {
+    setMostrarBienvenida(false);
+    setAbierto(true);
+  }
 
   async function enviarPregunta(texto: string) {
     if (!texto || enviando) return;
@@ -144,11 +159,34 @@ export function ChatWidget() {
         </div>
       )}
 
+      {mostrarBienvenida && !abierto && (
+        <div
+          onClick={abrirChat}
+          className="chat-burbuja-bienvenida relative max-w-[15rem] cursor-pointer rounded-2xl rounded-br-sm border border-zinc-200 bg-white p-4 shadow-xl"
+        >
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              setMostrarBienvenida(false);
+            }}
+            aria-label="Cerrar mensaje"
+            className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full border border-zinc-200 bg-white text-zinc-500 shadow-sm hover:text-zinc-700"
+          >
+            <X size={12} />
+          </button>
+          <p className="text-sm font-semibold text-zinc-900">Soy tu asesor financiero</p>
+          <p className="mt-1 text-sm text-zinc-600">¿En que te puedo ayudar?</p>
+        </div>
+      )}
+
       <button
         type="button"
-        onClick={() => setAbierto((v) => !v)}
+        onClick={() => (abierto ? setAbierto(false) : abrirChat())}
         aria-label={abierto ? "Cerrar chat" : "Abrir chat del asistente"}
-        className="btn-primary flex h-14 w-14 items-center justify-center rounded-full shadow-lg"
+        className={`btn-primary flex h-14 w-14 items-center justify-center rounded-full shadow-lg ${
+          !abierto ? "chat-boton-resplandor" : ""
+        }`}
       >
         {abierto ? <X size={24} /> : <MessageCircle size={24} />}
       </button>
